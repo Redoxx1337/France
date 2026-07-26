@@ -1,0 +1,1222 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>France Tool · OSINT</title>
+    <style>
+        /* ============================================================
+           RESET & BASE
+           ============================================================ */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 20px;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        body.light {
+            background: #f0f0f0;
+            color: #1a1a1a;
+        }
+
+        body.light .header {
+            border-bottom-color: #ccc;
+        }
+        body.light .header h1 {
+            color: #1a1a1a;
+        }
+        body.light .search-box,
+        body.light .results,
+        body.light .modal-content,
+        body.light .dropdown-menu {
+            background: #ffffff;
+            border-color: #ddd;
+        }
+        body.light .search-box input,
+        body.light .dropdown-btn {
+            background: #f5f5f5;
+            border-color: #ccc;
+            color: #1a1a1a;
+        }
+        body.light .dropdown-menu .item {
+            color: #333;
+        }
+        body.light .dropdown-menu .item:hover {
+            background: #e8e8e8;
+        }
+        body.light .gear {
+            color: #888;
+        }
+        body.light .gear:hover {
+            color: #1a1a1a;
+            background: #e0e0e0;
+        }
+        body.light .footer {
+            border-top-color: #ccc;
+            color: #888;
+        }
+        body.light .chain-container {
+            border-top-color: #ddd;
+        }
+        body.light .chain-row {
+            border-bottom-color: #eee;
+        }
+        body.light .report-bar .btn-secondary {
+            border-color: #ccc;
+            color: #333;
+        }
+        body.light .report-bar .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+        body.light .btn-support-dark {
+            background: #0a0a0a;
+            color: #fff;
+        }
+        body.light .btn-support-dark:hover {
+            background: #1a1a1a;
+        }
+
+        .container {
+            max-width: 780px;
+            width: 100%;
+            padding-bottom: 20px;
+        }
+
+        /* ============================================================
+           HEADER
+           ============================================================ */
+        .header {
+            text-align: center;
+            padding: 16px 0 24px;
+            border-bottom: 1px solid #1a1a1a;
+            margin-bottom: 20px;
+            transition: border 0.3s;
+        }
+
+        .header h1 {
+            font-size: 34px;
+            font-weight: 700;
+            color: #fff;
+            letter-spacing: -0.5px;
+            transition: color 0.3s;
+        }
+
+        .header h1 span {
+            color: #4a9eff;
+        }
+
+        .header .sub {
+            color: #555;
+            font-size: 13px;
+            margin-top: 4px;
+        }
+
+        /* ============================================================
+           TOP BAR
+           ============================================================ */
+        .top-bar {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-bottom: 12px;
+            align-items: center;
+        }
+
+        .gear {
+            font-size: 22px;
+            cursor: pointer;
+            color: #444;
+            transition: 0.3s;
+            padding: 4px 8px;
+            border-radius: 6px;
+            background: transparent;
+            border: none;
+            line-height: 1;
+        }
+
+        .gear:hover {
+            color: #ccc;
+            background: #1a1a1a;
+        }
+
+        .btn-support {
+            background: #f7931a;
+            color: #fff;
+            border: none;
+            padding: 6px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-support:hover {
+            background: #e07c0e;
+            transform: scale(1.02);
+        }
+
+        .btn-support-dark {
+            background: #1a1a1a;
+            color: #ccc;
+            border: 1px solid #333;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            width: 100%;
+            margin-top: 8px;
+        }
+
+        .btn-support-dark:hover {
+            background: #2a2a2a;
+            border-color: #4a9eff;
+        }
+
+        /* ============================================================
+           SEARCH
+           ============================================================ */
+        .search-box {
+            background: #0d0d0d;
+            border: 1px solid #1a1a1a;
+            border-radius: 12px;
+            padding: 20px;
+            position: relative;
+            transition: background 0.3s, border 0.3s;
+        }
+
+        .search-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .search-box input {
+            flex: 1;
+            min-width: 150px;
+            background: #141414;
+            border: 1px solid #222;
+            color: #e0e0e0;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: background 0.3s, border 0.3s, color 0.3s;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #4a9eff;
+        }
+
+        .search-box input::placeholder {
+            color: #444;
+        }
+
+        .btn-search {
+            background: #4a9eff;
+            color: #fff;
+            border: none;
+            padding: 12px 28px;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            white-space: nowrap;
+        }
+
+        .btn-search:hover {
+            background: #3a8eef;
+        }
+        .btn-search:active {
+            transform: scale(0.97);
+        }
+
+        /* ============================================================
+           DROPDOWN
+           ============================================================ */
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-btn {
+            background: #141414;
+            border: 1px solid #222;
+            color: #ccc;
+            padding: 12px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 140px;
+            justify-content: space-between;
+            transition: background 0.3s, border 0.3s, color 0.3s;
+        }
+
+        .dropdown-btn:hover {
+            background: #1a1a1a;
+            border-color: #4a9eff;
+        }
+
+        .dropdown-btn .arrow {
+            font-size: 12px;
+            color: #555;
+            transition: 0.3s;
+        }
+
+        .dropdown-btn.active .arrow {
+            transform: rotate(180deg);
+        }
+
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            top: calc(100% + 4px);
+            left: 0;
+            background: #0d0d0d;
+            border: 1px solid #1a1a1a;
+            border-radius: 10px;
+            padding: 6px 0;
+            min-width: 220px;
+            z-index: 10;
+            max-height: 320px;
+            overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+            transition: background 0.3s, border 0.3s;
+        }
+
+        .dropdown-menu.show {
+            display: block;
+        }
+
+        .dropdown-menu .item {
+            padding: 8px 18px;
+            cursor: pointer;
+            color: #aaa;
+            font-size: 13px;
+            transition: 0.2s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .dropdown-menu .item:hover {
+            background: #1a1a1a;
+            color: #fff;
+        }
+
+        .dropdown-menu .item .short {
+            color: #444;
+            font-size: 11px;
+        }
+
+        .dropdown-menu .item.active {
+            color: #4a9eff;
+            background: #1a1a1a;
+        }
+
+        .dropdown-menu .divider {
+            border-top: 1px solid #1a1a1a;
+            margin: 4px 12px;
+        }
+
+        /* ============================================================
+           RESULTS
+           ============================================================ */
+        .results {
+            background: #0d0d0d;
+            border: 1px solid #1a1a1a;
+            border-radius: 12px;
+            padding: 20px;
+            min-height: 80px;
+            margin-top: 20px;
+            display: none;
+            transition: background 0.3s, border 0.3s;
+        }
+
+        .results.show {
+            display: block;
+        }
+
+        .results .loading {
+            color: #555;
+            text-align: center;
+            padding: 16px 0;
+            font-size: 14px;
+        }
+
+        .results .empty {
+            color: #555;
+            text-align: center;
+            padding: 16px 0;
+            font-size: 14px;
+        }
+
+        .results .section-title {
+            color: #888;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 8px 0 4px;
+            border-bottom: 1px solid #1a1a1a;
+            margin-bottom: 4px;
+        }
+
+        .results .entry {
+            padding: 4px 0;
+            border-bottom: 1px solid #111;
+            font-size: 14px;
+        }
+
+        .results .entry:last-child {
+            border-bottom: none;
+        }
+
+        .results .entry .value {
+            color: #e0e0e0;
+            font-weight: 500;
+            word-break: break-all;
+        }
+
+        .results .entry .value.phone {
+            color: #4a9eff;
+        }
+        .results .entry .value.email {
+            color: #ff6b6b;
+        }
+        .results .entry .value.ip {
+            color: #6c5ce7;
+        }
+        .results .entry .value.url {
+            color: #ffd93d;
+        }
+        .results .entry .value.name {
+            color: #00b894;
+        }
+
+        .chain-container {
+            margin-top: 16px;
+            padding-top: 12px;
+            border-top: 1px solid #1a1a1a;
+        }
+
+        .chain-container .chain-title {
+            color: #888;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .chain-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 5px 0;
+            font-size: 13px;
+            border-bottom: 1px solid #151515;
+            flex-wrap: wrap;
+        }
+
+        .chain-row:last-child {
+            border-bottom: none;
+        }
+
+        .chain-row .src {
+            color: #4a9eff;
+            font-weight: 500;
+        }
+
+        .chain-row .arr {
+            color: #333;
+        }
+
+        .chain-row .tgt {
+            color: #ffd93d;
+            font-weight: 500;
+        }
+
+        .chain-row .typ {
+            color: #444;
+            font-size: 9px;
+            text-transform: uppercase;
+            background: #1a1a1a;
+            padding: 1px 10px;
+            border-radius: 8px;
+        }
+
+        .report-bar {
+            display: flex;
+            gap: 10px;
+            margin-top: 16px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            background: #4a9eff;
+            color: #fff;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn:hover {
+            background: #3a8eef;
+        }
+
+        .btn-secondary {
+            background: transparent;
+            border: 1px solid #2a2a2a;
+            color: #ccc;
+        }
+
+        .btn-secondary:hover {
+            background: #1a1a1a;
+            border-color: #4a9eff;
+        }
+
+        /* ============================================================
+           MODAL
+           ============================================================ */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #0d0d0d;
+            border: 1px solid #1a1a1a;
+            border-radius: 14px;
+            padding: 28px;
+            max-width: 420px;
+            width: 92%;
+            max-height: 80vh;
+            overflow-y: auto;
+            transition: background 0.3s, border 0.3s;
+        }
+
+        .modal-content h2 {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 16px;
+            color: #e0e0e0;
+        }
+
+        .modal-content .close {
+            float: right;
+            font-size: 28px;
+            cursor: pointer;
+            color: #444;
+            line-height: 1;
+        }
+
+        .modal-content .close:hover {
+            color: #ccc;
+        }
+
+        .modal-content .field {
+            margin-bottom: 14px;
+        }
+
+        .modal-content .field label {
+            display: block;
+            color: #666;
+            font-size: 12px;
+            margin-bottom: 3px;
+        }
+
+        .modal-content .field select {
+            width: 100%;
+            background: #141414;
+            border: 1px solid #222;
+            color: #e0e0e0;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+        }
+
+        .modal-content .field select:focus {
+            outline: none;
+            border-color: #4a9eff;
+        }
+
+        .modal-content .btn-save {
+            background: #4a9eff;
+            color: #fff;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: 0.2s;
+            width: 100%;
+            margin-top: 8px;
+        }
+
+        .modal-content .btn-save:hover {
+            background: #3a8eef;
+        }
+
+        /* ============================================================
+           FOOTER
+           ============================================================ */
+        .footer {
+            text-align: center;
+            color: #333;
+            font-size: 11px;
+            padding: 16px 0 4px;
+            border-top: 1px solid #1a1a1a;
+            margin-top: 20px;
+            transition: border 0.3s, color 0.3s;
+        }
+
+        /* ============================================================
+           RESPONSIVE
+           ============================================================ */
+        @media (max-width: 600px) {
+            .search-row {
+                flex-direction: column;
+            }
+            .search-box input {
+                width: 100%;
+                min-width: unset;
+            }
+            .btn-search {
+                width: 100%;
+            }
+            .dropdown-btn {
+                width: 100%;
+                justify-content: center;
+            }
+            .header h1 {
+                font-size: 26px;
+            }
+            .top-bar {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+
+        <!-- HEADER -->
+        <div class="header">
+            <h1>FRANCE <span>TOOL</span></h1>
+            <div class="sub">OSINT · Поиск данных</div>
+        </div>
+
+        <!-- TOP BAR -->
+        <div class="top-bar">
+            <button class="btn-support" onclick="window.open('http://t.me/send?start=IVXhs6obU4FV','_blank')">☕ Поддержать</button>
+            <button class="gear" onclick="toggleSettings()">⚙</button>
+        </div>
+
+        <!-- SEARCH -->
+        <div class="search-box">
+            <div class="search-row">
+                <div class="dropdown" id="dropdown">
+                    <button class="dropdown-btn" onclick="toggleDropdown()">
+                        <span id="selectedType">📱 Phone</span>
+                        <span class="arrow">▾</span>
+                    </button>
+                    <div class="dropdown-menu" id="dropdownMenu">
+                        <div class="item active" data-value="phone" onclick="selectType('phone','📱 Phone')">📱 Phone <span class="short">номер</span></div>
+                        <div class="item" data-value="fio" onclick="selectType('fio','👤 FIO')">👤 FIO <span class="short">фио</span></div>
+                        <div class="item" data-value="email" onclick="selectType('email','✉️ Email')">✉️ Email <span class="short">почта</span></div>
+                        <div class="item" data-value="ip" onclick="selectType('ip','🌐 IP')">🌐 IP <span class="short">адрес</span></div>
+                        <div class="item" data-value="domain" onclick="selectType('domain','🔗 Domain')">🔗 Domain <span class="short">домен</span></div>
+                        <div class="divider"></div>
+                        <div class="item" data-value="sherlock" onclick="selectType('sherlock','🕵️ Sherlock')">🕵️ Sherlock <span class="short">username</span></div>
+                        <div class="item" data-value="vk" onclick="selectType('vk','📸 VK')">📸 VK <span class="short">id</span></div>
+                        <div class="item" data-value="github" onclick="selectType('github','🐙 GitHub')">🐙 GitHub <span class="short">username</span></div>
+                        <div class="item" data-value="telegram" onclick="selectType('telegram','💬 Telegram')">💬 Telegram <span class="short">@username</span></div>
+                        <div class="divider"></div>
+                        <div class="item" data-value="nick" onclick="selectType('nick','🏷️ Nick')">🏷️ Nick <span class="short">никнейм</span></div>
+                        <div class="item" data-value="inn" onclick="selectType('inn','📄 INN')">📄 INN <span class="short">инн</span></div>
+                        <div class="item" data-value="passport" onclick="selectType('passport','🛂 Passport')">🛂 Passport <span class="short">паспорт</span></div>
+                        <div class="item" data-value="auto" onclick="selectType('auto','🚗 Auto')">🚗 Auto <span class="short">госномер</span></div>
+                        <div class="divider"></div>
+                        <div class="item" data-value="auto" onclick="selectType('auto','🔍 Auto')" style="color:#4a9eff;">🔍 Auto <span class="short">автоопределение</span></div>
+                    </div>
+                </div>
+
+                <input type="text" id="searchQuery" placeholder="Введите запрос...">
+                <button class="btn-search" onclick="doSearch()">⚡ Поиск</button>
+            </div>
+        </div>
+
+        <!-- RESULTS -->
+        <div class="results" id="results">
+            <div class="loading">Введите запрос и нажмите Поиск</div>
+        </div>
+
+        <!-- FOOTER -->
+        <div class="footer">France Tool v2.0 · Все данные из открытых источников</div>
+
+    </div>
+
+    <!-- SETTINGS MODAL -->
+    <div class="modal" id="settingsModal">
+        <div class="modal-content">
+            <span class="close" onclick="closeSettings()">&times;</span>
+            <h2>⚙️ Настройки</h2>
+            <div class="field">
+                <label>Тема</label>
+                <select id="themeSelect" onchange="applyTheme(this.value)">
+                    <option value="dark">🌙 Тёмная</option>
+                    <option value="light">☀️ Светлая</option>
+                </select>
+            </div>
+            <button class="btn-support-dark" onclick="window.open('http://t.me/send?start=IVXhs6obU4FV','_blank')">☕ Поддержать</button>
+            <button class="btn-save" onclick="closeSettings()">Закрыть</button>
+        </div>
+    </div>
+
+    <script>
+        // ============================================================
+        // STATE
+        // ============================================================
+        let currentType = 'phone';
+        let lastData = null;
+
+        // ============================================================
+        // THEME
+        // ============================================================
+        function applyTheme(theme) {
+            if (theme === 'light') {
+                document.body.classList.add('light');
+            } else {
+                document.body.classList.remove('light');
+            }
+            localStorage.setItem('ft_theme', theme);
+        }
+
+        function loadTheme() {
+            const saved = localStorage.getItem('ft_theme');
+            if (saved === 'light') {
+                document.body.classList.add('light');
+                document.getElementById('themeSelect').value = 'light';
+            } else {
+                document.body.classList.remove('light');
+                document.getElementById('themeSelect').value = 'dark';
+            }
+        }
+
+        // ============================================================
+        // DROPDOWN
+        // ============================================================
+        function toggleDropdown() {
+            document.getElementById('dropdownMenu').classList.toggle('show');
+            document.querySelector('.dropdown-btn').classList.toggle('active');
+        }
+
+        function selectType(value, label) {
+            currentType = value;
+            document.getElementById('selectedType').textContent = label;
+            document.getElementById('dropdownMenu').classList.remove('show');
+            document.querySelector('.dropdown-btn').classList.remove('active');
+            document.querySelectorAll('.dropdown-menu .item').forEach(el => el.classList.remove('active'));
+            document.querySelector(`.dropdown-menu .item[data-value="${value}"]`).classList.add('active');
+        }
+
+        // Закрываем дропдаун при клике вне
+        document.addEventListener('click', function(e) {
+            const dropdown = document.getElementById('dropdown');
+            if (!dropdown.contains(e.target)) {
+                document.getElementById('dropdownMenu').classList.remove('show');
+                document.querySelector('.dropdown-btn').classList.remove('active');
+            }
+        });
+
+        // ============================================================
+        // SETTINGS
+        // ============================================================
+        function toggleSettings() {
+            document.getElementById('settingsModal').classList.toggle('show');
+        }
+
+        function closeSettings() {
+            document.getElementById('settingsModal').classList.remove('show');
+        }
+
+        // ============================================================
+        // API KEYS (HARDCODED)
+        // ============================================================
+        function getApiKeys() {
+            return {
+                jitler: 'vYJ6HySY0cL6mljjXdDRwJlM',
+                anyscan: 'UgxBDaDSZCXqEJHuq-OYZA',
+                cerebra: 'ca_4oOeTcjU0dYTU_O6yl1Spg5s2JzseZEzVr2_dYL7rmI',
+                raidfind: 'rf_live_cc83ac8c6c518f07193f7c73a4ec02f053408368b2c1d20a'
+            };
+        }
+
+        // ============================================================
+        // SEARCH
+        // ============================================================
+        async function doSearch() {
+            const query = document.getElementById('searchQuery').value.trim();
+
+            if (!query) {
+                alert('Введите запрос');
+                return;
+            }
+
+            const results = document.getElementById('results');
+            results.classList.add('show');
+            results.innerHTML = '<div class="loading">⏳ Поиск...</div>';
+
+            const keys = getApiKeys();
+
+            try {
+                const requests = [];
+
+                // === Jitler ===
+                const typeMap = {
+                    phone: 'number',
+                    fio: 'sherlock',
+                    email: 'sherlock',
+                    ip: 'sherlock',
+                    domain: 'sherlock',
+                    sherlock: 'sherlock',
+                    vk: 'vks',
+                    github: 'sherlock',
+                    telegram: 'sherlock',
+                    nick: 'sherlock',
+                    inn: 'sherlock',
+                    passport: 'sherlock',
+                    auto: 'sherlock'
+                };
+                const jtype = typeMap[currentType] || 'sherlock';
+                requests.push(
+                    fetch('https://api.jitler.top/search', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${keys.jitler}`
+                        },
+                        body: JSON.stringify({ type: jtype, query: query, page: 1 })
+                    })
+                    .then(r => r.json())
+                    .then(data => ({ source: 'Jitler', data }))
+                    .catch(() => ({ source: 'Jitler', data: null }))
+                );
+
+                // === AnyScan ===
+                const endpointMap = { phone: 'search', email: 'search', ip: 'ipinfo', domain: 'whois', github: 'github',
+                    fio: 'search' };
+                const endpoint = endpointMap[currentType] || 'search';
+                let url = `https://anyscan.duckdns.org/api/v1/${endpoint}`;
+                const params = {};
+                if (endpoint === 'search') {
+                    params.type = currentType === 'phone' ? 'phone' : 'email';
+                    params.q = query;
+                    params.limit = 50;
+                } else if (endpoint === 'ipinfo') {
+                    params.ip = query;
+                } else if (endpoint === 'whois') {
+                    params.domain = query;
+                } else if (endpoint === 'github') {
+                    params.username = query;
+                }
+                const qs = new URLSearchParams(params).toString();
+                if (qs) url += '?' + qs;
+                requests.push(
+                    fetch(url, {
+                        headers: { 'Authorization': `Bearer ${keys.anyscan}` }
+                    })
+                    .then(r => r.json())
+                    .then(data => ({ source: 'AnyScan', data }))
+                    .catch(() => ({ source: 'AnyScan', data: null }))
+                );
+
+                // === Cerebra ===
+                requests.push(
+                    fetch('https://cerera.cc/api/v1/search', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${keys.cerebra}`
+                        },
+                        body: JSON.stringify({ query: query, type: currentType })
+                    })
+                    .then(r => r.json())
+                    .then(data => ({ source: 'Cerebra', data }))
+                    .catch(() => ({ source: 'Cerebra', data: null }))
+                );
+
+                // === RaidFind ===
+                const raidTypes = ['phone', 'email', 'fio', 'telegram', 'vk', 'nick', 'ip', 'inn', 'passport', 'auto'];
+                const raidType = raidTypes.includes(currentType) ? currentType : 'auto';
+                requests.push(
+                    fetch('https://api.raidfind.cc/v1/search', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-API-Key': keys.raidfind,
+                            'User-Agent': 'FranceTool/2.0'
+                        },
+                        body: JSON.stringify({ query: query, search_type: raidType })
+                    })
+                    .then(r => {
+                        if (r.status === 402 || r.status === 429) {
+                            return r.json().then(data => ({ source: 'RaidFind', data: { error: data.error || 'error',
+                                    message: data.message || 'Ошибка' } }));
+                        }
+                        return r.json().then(data => ({ source: 'RaidFind', data }));
+                    })
+                    .catch(() => ({ source: 'RaidFind', data: null }))
+                );
+
+                const responses = await Promise.all(requests);
+
+                // Собираем результаты
+                const rawData = {};
+                let hasData = false;
+                responses.forEach(r => {
+                    if (r.data && r.data.response) {
+                        rawData[r.source] = r.data;
+                        hasData = true;
+                    } else if (r.data && r.data.result_count !== undefined) {
+                        rawData[r.source] = r.data;
+                        hasData = true;
+                    } else if (r.data && r.data.error) {
+                        rawData[r.source] = { error: r.data.error, message: r.data.message };
+                    }
+                });
+
+                if (!hasData || Object.keys(rawData).length === 0) {
+                    results.innerHTML = '<div class="empty">❌ Ничего не найдено</div>';
+                    return;
+                }
+
+                // Парсим сущности
+                const entities = extractEntities(rawData, query);
+                const links = buildLinks(entities, query);
+
+                // Сохраняем для отчёта
+                lastData = {
+                    query: query,
+                    type: currentType,
+                    entities: entities,
+                    links: links,
+                    results: rawData
+                };
+
+                renderResults(query, entities, links, rawData);
+
+            } catch (e) {
+                results.innerHTML = `<div class="empty">❌ Ошибка: ${e.message}</div>`;
+            }
+        }
+
+        // ============================================================
+        // PARSE
+        // ============================================================
+        function extractEntities(results, query) {
+            const entities = { phones: [], emails: [], urls: [], ips: [], names: [], socials: [], addresses: [] };
+
+            function extractRecursive(obj, depth = 0) {
+                if (depth > 5 || !obj) return;
+                if (typeof obj === 'string') {
+                    const phones = obj.match(/\+?\d[\d\-\(\)\s]{7,15}\d/g);
+                    if (phones) phones.forEach(p => { if (p.replace(/\D/g, '').length > 5) entities.phones.push(p); });
+                    const emails = obj.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g);
+                    if (emails) emails.forEach(e => entities.emails.push(e));
+                    const urls = obj.match(/https?:\/\/[^\s<>"{}|\\^`\[\]]+/g);
+                    if (urls) urls.forEach(u => entities.urls.push(u));
+                    const ips = obj.match(/\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/g);
+                    if (ips) ips.forEach(i => entities.ips.push(i));
+                    const names = obj.match(/[А-Я][а-я]+\s+[А-Я][а-я]+/g);
+                    if (names) names.forEach(n => entities.names.push(n));
+                    return;
+                }
+                if (Array.isArray(obj)) {
+                    obj.forEach(item => extractRecursive(item, depth + 1));
+                    return;
+                }
+                if (typeof obj === 'object') {
+                    for (const key in obj) {
+                        const val = obj[key];
+                        const kl = key.toLowerCase();
+                        if (typeof val === 'string' && val.length > 2) {
+                            if (kl.includes('phone') || kl.includes('tel') || kl.includes('mobile')) {
+                                if (val.replace(/\D/g, '').length > 5) entities.phones.push(val);
+                            } else if (kl.includes('email') || kl.includes('mail')) {
+                                if (val.includes('@')) entities.emails.push(val);
+                            } else if (kl.includes('url') || kl.includes('link') || kl.includes('site')) {
+                                if (val.includes('http')) entities.urls.push(val);
+                            } else if (kl.includes('ip')) {
+                                if (val.match(/\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/)) entities.ips.push(val);
+                            } else if (kl.includes('name') || kl.includes('username') || kl.includes('login') || kl
+                                .includes('fio')) {
+                                if (val.length > 1) entities.names.push(val);
+                            } else if (kl.includes('social') || kl.includes('profile') || kl.includes('vk')) {
+                                entities.socials.push(val);
+                            }
+                        }
+                        extractRecursive(val, depth + 1);
+                    }
+                }
+            }
+
+            for (const source in results) {
+                extractRecursive(results[source]);
+            }
+
+            for (const key in entities) {
+                entities[key] = [...new Set(entities[key])].filter(x => x && x !== query);
+                if (key === 'phones') {
+                    entities[key] = entities[key].filter(p => p.replace(/\D/g, '').length > 5);
+                }
+            }
+
+            return entities;
+        }
+
+        function buildLinks(entities, query) {
+            const links = [];
+            for (const [type, values] of Object.entries(entities)) {
+                for (const value of values.slice(0, 30)) {
+                    if (value && value !== query) {
+                        links.push({ source: query, target: value, type: type });
+                    }
+                }
+            }
+            return links;
+        }
+
+        // ============================================================
+        // RENDER
+        // ============================================================
+        function renderResults(query, entities, links, rawData) {
+            const results = document.getElementById('results');
+            const total = Object.values(entities).reduce((a, b) => a + b.length, 0);
+
+            let html = '';
+
+            // Статистика
+            const sources = Object.keys(rawData).filter(s => rawData[s] && !rawData[s].error);
+            html +=
+                `<div style="color:#666;font-size:13px;margin-bottom:12px;">Найдено: ${total} сущностей, ${links.length} связей</div>`;
+
+            // Сущности
+            const labels = {
+                phones: '📱 Телефоны',
+                emails: '✉️ Email',
+                urls: '🔗 URL',
+                ips: '🌐 IP',
+                names: '👤 Имена',
+                socials: '🌍 Соцсети',
+                addresses: '📍 Адреса'
+            };
+            const classes = {
+                phones: 'phone',
+                emails: 'email',
+                urls: 'url',
+                ips: 'ip',
+                names: 'name'
+            };
+
+            for (const [key, label] of Object.entries(labels)) {
+                if (entities[key] && entities[key].length > 0) {
+                    html += `<div class="section-title">${label} (${entities[key].length})</div>`;
+                    entities[key].slice(0, 30).forEach(item => {
+                        const cls = classes[key] || '';
+                        html += `<div class="entry"><span class="value ${cls}">${escapeHtml(item)}</span></div>`;
+                    });
+                }
+            }
+
+            // Chain
+            if (links.length > 0) {
+                html += `<div class="chain-container"><div class="chain-title">🔗 Цепочка связей (${links.length})</div>`;
+                links.slice(0, 50).forEach(link => {
+                    html +=
+                        `<div class="chain-row"><span class="src">${escapeHtml(link.source)}</span><span class="arr">→</span><span class="tgt">${escapeHtml(link.target)}</span><span class="typ">${escapeHtml(link.type)}</span></div>`;
+                });
+                if (links.length > 50) {
+                    html +=
+                        `<div style="color:#555;font-size:12px;padding:4px 0;">... и ещё ${links.length - 50}</div>`;
+                }
+                html += `</div>`;
+            }
+
+            // RaidFind баланс
+            if (rawData.RaidFind && rawData.RaidFind.balance !== undefined) {
+                html +=
+                    `<div style="color:#555;font-size:12px;margin-top:8px;">RaidFind баланс: ${rawData.RaidFind.balance} запросов</div>`;
+            }
+
+            // Кнопки отчёта
+            html += `
+                    <div class="report-bar">
+                        <button class="btn" onclick="downloadReport()">📥 HTML Отчёт</button>
+                        <button class="btn btn-secondary" onclick="downloadJSON()">📊 JSON</button>
+                    </div>
+                `;
+
+            results.innerHTML = html;
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // ============================================================
+        // DOWNLOAD REPORT
+        // ============================================================
+        function downloadReport() {
+            if (!lastData) { alert('Сначала выполните поиск'); return; }
+            const data = lastData;
+            const now = new Date().toISOString().replace(/[:.]/g, '-');
+
+            const html = generateReportHTML(data);
+            const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `report_${data.query}_${now}.html`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function downloadJSON() {
+            if (!lastData) { alert('Сначала выполните поиск'); return; }
+            const data = lastData;
+            const now = new Date().toISOString().replace(/[:.]/g, '-');
+            const json = JSON.stringify(data, null, 2);
+            const blob = new Blob([json], { type: 'application/json;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `data_${data.query}_${now}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // ============================================================
+        // GENERATE REPORT HTML
+        // ============================================================
+        function generateReportHTML(data) {
+            const now = new Date().toLocaleString();
+
+            let entitiesHTML = '';
+            const labels = { phones: '📱 Телефоны', emails: '✉️ Email', urls: '🔗 URL', ips: '🌐 IP', names: '👤 Имена',
+                socials: '🌍 Соцсети', addresses: '📍 Адреса' };
+            for (const [key, label] of Object.entries(labels)) {
+                if (data.entities[key] && data.entities[key].length > 0) {
+                    entitiesHTML += `<div class="section"><h2>${label} (${data.entities[key].length})</h2><div class="grid">`;
+                    data.entities[key].slice(0, 30).forEach(item => {
+                        entitiesHTML += `<div class="item"><div class="val">${escapeHtml(item)}</div></div>`;
+                    });
+                    entitiesHTML += '</div></div>';
+                }
+            }
+
+            let linksHTML = '';
+            if (data.links && data.links.length > 0) {
+                linksHTML += `<div class="section"><h2>🔗 Цепочка связей (${data.links.length})</h2><div class="chain">`;
+                data.links.slice(0, 50).forEach(link => {
+                    linksHTML +=
+                        `<div class="chain-row"><span class="src">${escapeHtml(link.source)}</span><span class="arrow">→</span><span class="tgt">${escapeHtml(link.target)}</span><span class="typ">${escapeHtml(link.type)}</span></div>`;
+                });
+                linksHTML += '</div></div>';
+            }
+
+            return `<!DOCTYPE html>
+                <html><head><meta charset="UTF-8"><title>France Tool Report</title>
+                <style>
+                *{margin:0;padding:0;box-sizing:border-box}
+                body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:#0a0a0a;color:#e0e0e0;padding:30px}
+                .container{max-width:1200px;margin:0 auto;background:#0d0d0d;border-radius:16px;padding:30px;border:1px solid #1a1a1a}
+                .header{border-bottom:2px solid #1a1a1a;padding-bottom:20px;margin-bottom:30px;display:flex;justify-content:space-between;flex-wrap:wrap}
+                .header h1{font-size:24px;font-weight:600;color:#fff}
+                .header h1 span{color:#4a9eff}
+                .header .meta{color:#666;font-size:13px}
+                .section{margin-bottom:25px;background:#111;border-radius:10px;padding:18px 20px;border:1px solid #181818}
+                .section h2{font-size:14px;font-weight:600;color:#666;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:12px;border-bottom:1px solid #181818;padding-bottom:10px}
+                .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px}
+                .item{background:#151515;padding:10px 14px;border-radius:6px;font-size:13px;border-left:3px solid #4a9eff;word-break:break-all}
+                .item .val{color:#e0e0e0;font-weight:500}
+                .chain{background:#0a0a0a;border-radius:8px;padding:14px;border:1px solid #151515}
+                .chain-row{display:flex;align-items:center;gap:12px;padding:6px 0;border-bottom:1px solid #111;font-size:13px}
+                .chain-row:last-child{border-bottom:none}
+                .chain-row .src{color:#4a9eff;font-weight:600}
+                .chain-row .arrow{color:#333;font-weight:300;font-size:20px}
+                .chain-row .tgt{color:#ffd93d;font-weight:600}
+                .chain-row .typ{color:#444;font-size:9px;text-transform:uppercase;background:#151515;padding:1px 10px;border-radius:10px;margin-left:auto}
+                .footer{margin-top:25px;padding-top:16px;border-top:2px solid #1a1a1a;color:#333;font-size:11px;text-align:right}
+                </style>
+                </head>
+                <body>
+                <div class="container">
+                <div class="header"><h1>🔗 <span>FRANCE TOOL</span> Report</h1><div class="meta">${data.type.toUpperCase()} · ${escapeHtml(data.query)} · ${now}</div></div>
+                <div class="section"><h2>Запрос</h2><div style="font-size:15px;color:#fff;">${escapeHtml(data.query)}</div><div style="color:#555;font-size:12px;margin-top:4px;">Тип: ${data.type.toUpperCase()}</div></div>
+                ${entitiesHTML}
+                ${linksHTML}
+                <div class="footer">France Tool v2.0 · ${now}</div>
+                </div>
+                </body></html>`;
+        }
+
+        // ============================================================
+        // ENTER KEY
+        // ============================================================
+        document.getElementById('searchQuery').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') doSearch();
+        });
+
+        // ============================================================
+        // INIT
+        // ============================================================
+        window.onload = function() {
+            loadTheme();
+            document.getElementById('searchQuery').focus();
+        };
+    </script>
+</body>
+</html>
