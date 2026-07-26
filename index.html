@@ -5,9 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>France Tool · OSINT</title>
     <style>
-        /* ============================================================
-           RESET & BASE
-           ============================================================ */
         * {
             margin: 0;
             padding: 0;
@@ -30,7 +27,6 @@
             background: #f0f0f0;
             color: #1a1a1a;
         }
-
         body.light .header {
             border-bottom-color: #ccc;
         }
@@ -94,9 +90,6 @@
             padding-bottom: 20px;
         }
 
-        /* ============================================================
-           HEADER
-           ============================================================ */
         .header {
             text-align: center;
             padding: 16px 0 24px;
@@ -123,9 +116,6 @@
             margin-top: 4px;
         }
 
-        /* ============================================================
-           TOP BAR
-           ============================================================ */
         .top-bar {
             display: flex;
             justify-content: flex-end;
@@ -190,9 +180,6 @@
             border-color: #4a9eff;
         }
 
-        /* ============================================================
-           SEARCH
-           ============================================================ */
         .search-box {
             background: #0d0d0d;
             border: 1px solid #1a1a1a;
@@ -250,9 +237,6 @@
             transform: scale(0.97);
         }
 
-        /* ============================================================
-           DROPDOWN
-           ============================================================ */
         .dropdown {
             position: relative;
             display: inline-block;
@@ -341,9 +325,6 @@
             margin: 4px 12px;
         }
 
-        /* ============================================================
-           RESULTS
-           ============================================================ */
         .results {
             background: #0d0d0d;
             border: 1px solid #1a1a1a;
@@ -500,9 +481,6 @@
             border-color: #4a9eff;
         }
 
-        /* ============================================================
-           MODAL
-           ============================================================ */
         .modal {
             display: none;
             position: fixed;
@@ -595,9 +573,6 @@
             background: #3a8eef;
         }
 
-        /* ============================================================
-           FOOTER
-           ============================================================ */
         .footer {
             text-align: center;
             color: #333;
@@ -608,9 +583,6 @@
             transition: border 0.3s, color 0.3s;
         }
 
-        /* ============================================================
-           RESPONSIVE
-           ============================================================ */
         @media (max-width: 600px) {
             .search-row {
                 flex-direction: column;
@@ -639,19 +611,16 @@
 
     <div class="container">
 
-        <!-- HEADER -->
         <div class="header">
             <h1>FRANCE <span>TOOL</span></h1>
             <div class="sub">OSINT · Поиск данных</div>
         </div>
 
-        <!-- TOP BAR -->
         <div class="top-bar">
             <button class="btn-support" onclick="window.open('http://t.me/send?start=IVXhs6obU4FV','_blank')">☕ Поддержать</button>
             <button class="gear" onclick="toggleSettings()">⚙</button>
         </div>
 
-        <!-- SEARCH -->
         <div class="search-box">
             <div class="search-row">
                 <div class="dropdown" id="dropdown">
@@ -685,17 +654,14 @@
             </div>
         </div>
 
-        <!-- RESULTS -->
         <div class="results" id="results">
             <div class="loading">Введите запрос и нажмите Поиск</div>
         </div>
 
-        <!-- FOOTER -->
         <div class="footer">France Tool v2.0 · Все данные из открытых источников</div>
 
     </div>
 
-    <!-- SETTINGS MODAL -->
     <div class="modal" id="settingsModal">
         <div class="modal-content">
             <span class="close" onclick="closeSettings()">&times;</span>
@@ -713,15 +679,9 @@
     </div>
 
     <script>
-        // ============================================================
-        // STATE
-        // ============================================================
         let currentType = 'phone';
         let lastData = null;
 
-        // ============================================================
-        // THEME
-        // ============================================================
         function applyTheme(theme) {
             if (theme === 'light') {
                 document.body.classList.add('light');
@@ -742,9 +702,6 @@
             }
         }
 
-        // ============================================================
-        // DROPDOWN
-        // ============================================================
         function toggleDropdown() {
             document.getElementById('dropdownMenu').classList.toggle('show');
             document.querySelector('.dropdown-btn').classList.toggle('active');
@@ -759,7 +716,6 @@
             document.querySelector(`.dropdown-menu .item[data-value="${value}"]`).classList.add('active');
         }
 
-        // Закрываем дропдаун при клике вне
         document.addEventListener('click', function(e) {
             const dropdown = document.getElementById('dropdown');
             if (!dropdown.contains(e.target)) {
@@ -768,9 +724,6 @@
             }
         });
 
-        // ============================================================
-        // SETTINGS
-        // ============================================================
         function toggleSettings() {
             document.getElementById('settingsModal').classList.toggle('show');
         }
@@ -779,9 +732,6 @@
             document.getElementById('settingsModal').classList.remove('show');
         }
 
-        // ============================================================
-        // API KEYS (HARDCODED)
-        // ============================================================
         function getApiKeys() {
             return {
                 jitler: 'vYJ6HySY0cL6mljjXdDRwJlM',
@@ -791,12 +741,8 @@
             };
         }
 
-        // ============================================================
-        // SEARCH
-        // ============================================================
         async function doSearch() {
             const query = document.getElementById('searchQuery').value.trim();
-
             if (!query) {
                 alert('Введите запрос');
                 return;
@@ -811,7 +757,6 @@
             try {
                 const requests = [];
 
-                // === Jitler ===
                 const typeMap = {
                     phone: 'number',
                     fio: 'sherlock',
@@ -842,7 +787,6 @@
                     .catch(() => ({ source: 'Jitler', data: null }))
                 );
 
-                // === AnyScan ===
                 const endpointMap = { phone: 'search', email: 'search', ip: 'ipinfo', domain: 'whois', github: 'github',
                     fio: 'search' };
                 const endpoint = endpointMap[currentType] || 'search';
@@ -870,7 +814,6 @@
                     .catch(() => ({ source: 'AnyScan', data: null }))
                 );
 
-                // === Cerebra ===
                 requests.push(
                     fetch('https://cerera.cc/api/v1/search', {
                         method: 'POST',
@@ -885,7 +828,6 @@
                     .catch(() => ({ source: 'Cerebra', data: null }))
                 );
 
-                // === RaidFind ===
                 const raidTypes = ['phone', 'email', 'fio', 'telegram', 'vk', 'nick', 'ip', 'inn', 'passport', 'auto'];
                 const raidType = raidTypes.includes(currentType) ? currentType : 'auto';
                 requests.push(
@@ -910,7 +852,6 @@
 
                 const responses = await Promise.all(requests);
 
-                // Собираем результаты
                 const rawData = {};
                 let hasData = false;
                 responses.forEach(r => {
@@ -930,11 +871,9 @@
                     return;
                 }
 
-                // Парсим сущности
                 const entities = extractEntities(rawData, query);
                 const links = buildLinks(entities, query);
 
-                // Сохраняем для отчёта
                 lastData = {
                     query: query,
                     type: currentType,
@@ -950,9 +889,6 @@
             }
         }
 
-        // ============================================================
-        // PARSE
-        // ============================================================
         function extractEntities(results, query) {
             const entities = { phones: [], emails: [], urls: [], ips: [], names: [], socials: [], addresses: [] };
 
@@ -1026,21 +962,16 @@
             return links;
         }
 
-        // ============================================================
-        // RENDER
-        // ============================================================
         function renderResults(query, entities, links, rawData) {
             const results = document.getElementById('results');
             const total = Object.values(entities).reduce((a, b) => a + b.length, 0);
 
             let html = '';
 
-            // Статистика
             const sources = Object.keys(rawData).filter(s => rawData[s] && !rawData[s].error);
             html +=
                 `<div style="color:#666;font-size:13px;margin-bottom:12px;">Найдено: ${total} сущностей, ${links.length} связей</div>`;
 
-            // Сущности
             const labels = {
                 phones: '📱 Телефоны',
                 emails: '✉️ Email',
@@ -1068,7 +999,6 @@
                 }
             }
 
-            // Chain
             if (links.length > 0) {
                 html += `<div class="chain-container"><div class="chain-title">🔗 Цепочка связей (${links.length})</div>`;
                 links.slice(0, 50).forEach(link => {
@@ -1082,13 +1012,11 @@
                 html += `</div>`;
             }
 
-            // RaidFind баланс
             if (rawData.RaidFind && rawData.RaidFind.balance !== undefined) {
                 html +=
                     `<div style="color:#555;font-size:12px;margin-top:8px;">RaidFind баланс: ${rawData.RaidFind.balance} запросов</div>`;
             }
 
-            // Кнопки отчёта
             html += `
                     <div class="report-bar">
                         <button class="btn" onclick="downloadReport()">📥 HTML Отчёт</button>
@@ -1106,9 +1034,6 @@
             return div.innerHTML;
         }
 
-        // ============================================================
-        // DOWNLOAD REPORT
-        // ============================================================
         function downloadReport() {
             if (!lastData) { alert('Сначала выполните поиск'); return; }
             const data = lastData;
@@ -1138,9 +1063,6 @@
             URL.revokeObjectURL(url);
         }
 
-        // ============================================================
-        // GENERATE REPORT HTML
-        // ============================================================
         function generateReportHTML(data) {
             const now = new Date().toLocaleString();
 
@@ -1203,16 +1125,10 @@
                 </body></html>`;
         }
 
-        // ============================================================
-        // ENTER KEY
-        // ============================================================
         document.getElementById('searchQuery').addEventListener('keydown', function(e) {
             if (e.key === 'Enter') doSearch();
         });
 
-        // ============================================================
-        // INIT
-        // ============================================================
         window.onload = function() {
             loadTheme();
             document.getElementById('searchQuery').focus();
